@@ -1,9 +1,9 @@
-##Team C-rescendo - Anish Shenoy, Ashneel Das, Jasper Cheung
+## Team C-rescendo - Anish Shenoy, Ashneel Das, Jasper Cheung
 
 # Project Description
 This project aims to allow users at a party or similar event with many people to vote for songs on a shared group playlist. The music that is voted highest will be put at the top of a playlist that is shared by all users. Users will also have access to their own music library (similar to the music library created in project 0), which other users cannot alter.
 
-#How to use the project
+# How to use the project
 - The music will be in the form of .WAV files. 
 - One computer will be the main computer that hosts the shared playlist. This computer can also play the playlist by using a “-p” flag. This computer can also reset the playlist using a “-r” flag.
 - Users will place their .wav files into a directory. The program will read in these files and ask the user for information such as the song name, artist, and genre.
@@ -11,8 +11,8 @@ This project aims to allow users at a party or similar event with many people to
 - They will have the option to upvote or downvote a song in the main playlist by typing the name of the .WAV file followed by a flag (“-u” for upvote, “-d” for downvote).
 - The user can play songs from their own library with the “-p” flag.
 
-#Technical Design
-####Topics Covered:  
+# Technical Design
+#### Topics Covered:  
 
 - Networking: Users will be able to access the shared playlist from different computers
 Shared Memory: The shared playlist will be stored as shared memory
@@ -22,14 +22,14 @@ Shared Memory: The shared playlist will be stored as shared memory
 - Semaphores: Only one user should be able to add to the shared playlist at a time. 
 - External library: https://github.com/lichray/wavplay
 
-####Breakdown of work: 
+#### Breakdown of work: 
 
 - Ashneel: Local music player (individual playlists/playing music)
 - Anish: Server aspect of the project (shared playlist)
 - Jasper: Connection between the individual and shared playlist (voting, etc.) 
 - All 3 of us!: Will work on figuring out how to use the wavplay library and how to use networking (and, of course, help each other out should we run into troubles)
 
-#Timeline
+# Timeline
 - Dec 27th: submit our design document to our glorious computer science instructor
 - By Jan 2: Gain an understanding of the WAVPlay library so that we can use it to play songs.
 - By Jan 5: Hopefully gain an understanding of networking/sockets and how we can implement it into our program.
