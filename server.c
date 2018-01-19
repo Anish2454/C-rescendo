@@ -8,6 +8,8 @@
 #include <sys/sem.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "lib.h"
+#include "listfxns.h"
 
 #define KEY 1234
 #define playlist_name "PLAYLIST.txt"
@@ -89,3 +91,19 @@ int main(){
   add_to_playlist("Hey Jude", sd);
   printf("\n%s\n", view_playlist(sd));
 }
+
+
+/* 
+  0. Client sends a vote for a song to the server. If the file DNE on the server, it is sent. 
+  1. After a specified amount of time, the song is added to the playlist and voting closes. 
+  2. Server plays the playlist. While the first song plays, people can vote for the second song. 
+
+  Client: 
+    -Needs to be able to create a playlist, order the playlist, add songs to the playlist, remove songs 
+    from the playlist and play the playlist. 
+    -When adding song, write to the file that has the songs to play. Then, play it from the library (a directory).
+    -To stop playing, send a kill signal. 
+  Server: 
+    -Receives votes from the client, and receives files from the client. Adds these to the library/playlist.
+    -When it receives them, it writes to the file in order of votes. 
+*/
