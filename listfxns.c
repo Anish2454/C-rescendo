@@ -70,6 +70,7 @@ struct song_node * insert_front(struct song_node* node, char*name, char* artist,
   new.name = name;
   new.artist = artist;
   new.file_name = file_name;
+  new.votes = 0;
   new.next = node; //places at beginning
   *p = new;
   return p;
@@ -83,6 +84,7 @@ struct song_node* insert_in_order(struct song_node* nodeFront, char* name, char*
   new.name = name;
   new.artist = artist;
   new.file_name = file_name;
+  new.votes = 0;
   new.next = NULL;
   *p = new;
   while(node -> next ){
@@ -181,5 +183,11 @@ struct song_node* random_node(struct song_node* list){
   for(i = 0; i<random; i++){
     list = list->next;
   }
+  return list;
+}
+
+struct song_node* add_votes(struct song_node* list, char*name, char*artist, int val){
+  struct song_node* song = find_song(list, name, artist);
+  song -> votes = (song -> votes) + val;
   return list;
 }
