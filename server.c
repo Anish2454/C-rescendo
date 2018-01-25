@@ -8,6 +8,7 @@
 #include <sys/sem.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #include "lib.h"
 #include "listfxns.h"
 #include "pipe_networking.h"
@@ -20,6 +21,13 @@ struct song_node * playlist;
 
 //Creates New Playlist File and Semaphore
 //Returns Semaphore descriptor
+union semun {
+               int              val;    /* Value for SETVAL */
+               struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
+               unsigned short  *array;  /* Array for GETALL, SETALL */
+               struct seminfo  *__buf;  /* Buffer for IPC_INFO
+                                           (Linux-specific) */
+           };
 
 static void sighandler(int signo) {
   if (signo == SIGINT) {

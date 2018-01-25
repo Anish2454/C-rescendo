@@ -7,6 +7,7 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include "lib.h"
 #include "listfxns.h"
@@ -15,6 +16,14 @@
 
 #define KEY 5678
 #define playlist_name "client_playlist"
+
+union semun {
+               int              val;    /* Value for SETVAL */
+               struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
+               unsigned short  *array;  /* Array for GETALL, SETALL */
+               struct seminfo  *__buf;  /* Buffer for IPC_INFO
+                                           (Linux-specific) */
+           };
 
 int create_playlist(){
   printf("Creating Playlist File...\n");
@@ -168,7 +177,7 @@ int main() {
                     exit(0);
                 }
                 else {
-                    execvp("/usr/local/bin/mpg123", commandz);
+                    execvp("/usr/bin/mpg123", commandz);
                     exit(0);
                 }
             }
