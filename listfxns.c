@@ -3,11 +3,15 @@
 #include <string.h>
 #include <time.h>
 #include <ctype.h>
+#include <time.h>
 #include "listfxns.h"
-
+#include <sys/shm.h>
+//#include "control.h"
+//#include "shared_memory.h"
 
 //size of node
 size_t size = sizeof(struct song_node);
+int KEY = 6000;
 
 //Prints ALL SONGS
 void print_list(struct song_node* node){
@@ -57,14 +61,15 @@ int songcmp(struct song_node* song1, struct song_node* song2){
 //Creates a new node with that data and puts it at the beginning
 //of the list. Returns a pointer to the beginning of the list.
 struct song_node * insert_front(struct song_node* node, char*name, char* artist, char * file_name, int votes){
-  //Declare the pointer to our new node
-  struct song_node* p;
 
   //Since the memory associated with this function will
   //dissappear once it's done, we need to malloc space
   //for our node.
-  p = (struct song_node*) malloc(size);
-
+  srand(time(NULL));   // should only be called once
+  int r = rand();
+  int d = shmget(++KEY, sizeof(struct song_node), 0777|IPC_CREAT);
+  //if(print_error(d)) return NULL;
+  struct song_node* p = shmat(d, 0, 0);
   //Create the new node
   struct song_node new;
   new.name = name;
@@ -72,13 +77,21 @@ struct song_node * insert_front(struct song_node* node, char*name, char* artist,
   new.file_name = file_name;
   new.votes = votes;
   new.next = node; //places at beginning
+  printf("INSERT_FRONT:\n");
   *p = new;
+  //printf("Name (node): %s\n", node -> name);
+  //print_list(p);
   return p;
 }
 
 struct song_node* insert_in_order(struct song_node* nodeFront, char* name, char* artist, char * file_name){
   if(nodeFront == NULL) return insert_front(NULL, name, artist, file_name, 0);
-  struct song_node* p = (struct song_node*) malloc(size);
+  struct song_node* p;
+  srand(time(NULL));   // should only be called once
+  int r = rand();
+  int d = shmget(++KEY, sizeof(struct song_node), 0777|IPC_CREAT);
+  //if(print_error(d)) return NULL;
+  p = shmat(d, 0, 0);
   struct song_node new;
   struct song_node* node = nodeFront;
   new.name = name;
@@ -118,23 +131,29 @@ struct song_node * free_list(struct song_node* node){
   return free_list(next);
 }
 
-struct song_node* find_song(struct song_node* list, char* name, char* artist){
+struct song_node* find_song(struct song_node* playlist, char* name, char* artist){
+  printf("finding song...\n");
+  struct song_node* list = playlist;
   char* name_lower = convert_lower(name);
   char* artist_lower = convert_lower(artist);
   while(list){
     char* list_name = convert_lower(list -> name);
     char* list_artist = convert_lower(list -> artist);
     if(!strcmp(list_name, name_lower) && !strcmp(list_artist, artist_lower)){
+      printf("found song!\n");
       free(name_lower);
       free(artist_lower);
       free(list_name);
       free(list_artist);
       return list;
     }
+    printf("Loop of find_song\n");
+    print_list(list);
     list = list -> next;
-    free(list_name);
-    free(list_artist);
+    //free(list_name);
+    //free(list_artist);
   }
+  printf("Song not found!\n");
   free(name_lower);
   free(artist_lower);
   return NULL;
@@ -160,7 +179,7 @@ struct song_node* remove_node(struct song_node* listFront, struct song_node* nod
   if(listFront == node){
     struct song_node* newFront = listFront -> next;
     listFront -> next = NULL;
-    free(listFront);
+    shmdt(listFront);
     return newFront;
   }
   struct song_node* list = listFront;
@@ -201,7 +220,10 @@ int songcmp_byvote(struct song_node* one, struct song_node* two){
 
 struct song_node* insert_in_order_by_vote(struct song_node* nodeFront, char* name, char* artist, char* file_name, int votes){
   if(nodeFront == NULL) return insert_front(NULL, name, artist, file_name, votes);
-  struct song_node* p = (struct song_node*) malloc(size);
+  struct song_node* p;  // should only be called once
+  int d = shmget(++KEY, sizeof(struct song_node), 0777|IPC_CREAT);
+  //if(print_error(d)) return NULL;
+  p = shmat(d, 0, 0);
   struct song_node new;
   struct song_node* node = nodeFront;
   new.name = name;
@@ -212,8 +234,8 @@ struct song_node* insert_in_order_by_vote(struct song_node* nodeFront, char* nam
   *p = new;
   while(node -> next){
     int cmp = songcmp_byvote(p, node -> next);
-    if(cmp >= 0){
-      if(songcmp_byvote(p, node) > 0){
+    if(cmp <= 0){
+      if(songcmp_byvote(p, node) < 0){
         p -> next = node;
         return p;
       }
@@ -224,20 +246,85 @@ struct song_node* insert_in_order_by_vote(struct song_node* nodeFront, char* nam
     }
     node = node -> next;
   }
-  if(songcmp_byvote(p, node) > 0) return insert_front(node, p-> name, p-> artist, p->file_name, p->votes);
+  if(songcmp_byvote(p, node) < 0) return insert_front(node, p-> name, p-> artist, p->file_name, p->votes);
   else node -> next = p;
   return nodeFront;
 }
 
-struct song_node* sort_by_votes(struct song_node* list){
-  struct song_node* ans = (struct song_node*) malloc(size);
+/* function to swap data of two nodes a and b*/
+void swap(struct song_node *a, struct song_node *b)
+{
+    char* name1 = a -> name;
+    a -> name = b -> name;
+    b -> name = name1;
+
+    char* artist1 = a -> artist;
+    a -> artist = b -> artist;
+    b -> artist = artist1;
+
+    char* file_name1 = a -> file_name;
+    a -> file_name = b -> file_name;
+    b -> file_name = file_name1;
+
+    int votes1 = a -> votes;
+    a -> votes = b -> votes;
+    b -> votes = votes1;
+}
+
+/* Bubble sort the given linked lsit */
+void bubbleSort(struct song_node *start)
+{
+    int swapped, i;
+    struct song_node *ptr1;
+    struct song_node *lptr = NULL;
+
+    /* Checking for empty list */
+    if (ptr1 == NULL)
+        return;
+
+    do
+    {
+        swapped = 0;
+        ptr1 = start;
+
+        while (ptr1->next != lptr)
+        {
+            if (ptr1->votes < ptr1->next->votes)
+            {
+                swap(ptr1, ptr1->next);
+                swapped = 1;
+            }
+            ptr1 = ptr1->next;
+        }
+        lptr = ptr1;
+    }
+    while (swapped);
+}
+
+void sort_by_votes(struct song_node* list){
+  bubbleSort(list);
+  /*
+  struct song_node* ans;
   ans = NULL;
-  while(list){
-    ans = insert_in_order_by_vote(ans, list -> name, list -> artist, list -> file_name, list -> votes);
-    list = list -> next;
-    /*
+  struct song_node* dummy = list;
+  while(dummy){
+    printf("sorting(before insert_in_order_by_vote)\n");
+    ans = insert_in_order_by_vote(ans, dummy -> name, dummy -> artist, dummy -> file_name, dummy -> votes);
+    print_list(ans);
+    dummy = dummy -> next;
+
     printf("\n sorting...");
-    print_list(ans); */
+    print_list(ans);
   }
-  return ans;
+  printf("SORTED ANS\n");
+  print_list(ans);
+  while (ans){
+
+  }
+  int d = shmget(++KEY, sizeof(struct song_node), 0777|IPC_CREAT);
+  //if(print_error(d)) return NULL;
+  struct song_node* result = shmat(d, 0, 0);
+  *result = *ans;
+  return result;*/
+
 }

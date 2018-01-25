@@ -7,23 +7,23 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
 #include <unistd.h>
 #include "lib.h"
 #include "listfxns.h"
 #include "pipe_networking.h"
 #include "parsing.h"
+#include <sys/shm.h>
 
 #define KEY 5678
 #define playlist_name "client_playlist"
-
+/*
 union semun {
-               int              val;    /* Value for SETVAL */
-               struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
-               unsigned short  *array;  /* Array for GETALL, SETALL */
-               struct seminfo  *__buf;  /* Buffer for IPC_INFO
-                                           (Linux-specific) */
-           };
+               int              val;
+                struct semid_ds *buf;
+                unsigned short  *array;
+                struct seminfo  *__buf;  
+            };
+*/
 
 int create_playlist(){
   printf("Creating Playlist File...\n");
@@ -215,13 +215,13 @@ int main() {
             name[strlen(name)-1] = 0;
             artist[strlen(artist)-1] = 0;
             struct song_node * node = find_song(a, name, artist);
-            a = remove_node(a, node);
+            remove_node(a, node);
             print_list(a);
             temp = a;
             update_playlist(temp, sd);
             commandz = get_playlist_commands(a);
         }
-        else if (!strcmp(s, "server")){
+       if (!strcmp(s, "server")){
           int to_server;
           int from_server;
           char buffer[BUFFER_SIZE];
