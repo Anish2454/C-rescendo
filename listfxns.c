@@ -16,7 +16,7 @@ void print_list(struct song_node* node){
     return;
   }
   //Use "->" to access data from a struct pointer
-  printf("%s: %s, file: %s, votes: %d| ", node->artist, node->name, node->file_name, node->votes);
+  printf("%s: %s, file: %s, votes: %d\n ", node->artist, node->name, node->file_name, node->votes);
   return print_list(node->next);
 }
 
