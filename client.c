@@ -8,6 +8,7 @@
 #include <sys/sem.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #include "lib.h"
 #include "listfxns.h"
 #include "pipe_networking.h"
@@ -16,14 +17,13 @@
 
 #define KEY 5678
 #define playlist_name "client_playlist"
-/*
+
 union semun {
                int              val;
                 struct semid_ds *buf;
                 unsigned short  *array;
                 struct seminfo  *__buf;  
             };
-*/
 
 int create_playlist(){
   printf("Creating Playlist File...\n");
@@ -135,12 +135,18 @@ struct song_node * initialize_playlist(int sd) {
 
 char** get_playlist_commands(struct song_node* a){
   struct song_node* temp = a;
-  char** commandz = calloc(1, sizeof("mpg123"));
+  int i = 0; 
+  while (temp) {
+      temp = temp -> next; 
+      i++;
+  }
+  char** commandz = calloc(i+1, sizeof(char *));
   commandz[0] = "mpg123";
-  int i = 1;
+  i = 1;
+  temp = a;
   while (temp) {
       commandz[i] = calloc(1, sizeof(temp->file_name));
-      commandz[i] = temp->file_name;
+      strcpy(commandz[i], temp -> file_name);
       temp = temp -> next;
       i++;
   }
@@ -177,6 +183,11 @@ int main() {
                     exit(0);
                 }
                 else {
+		    int i = 0; 
+		    while (commandz[i]) {
+			printf("commandz[%d]: [%s]\n", i, commandz[i]);
+			i++;
+		    }
                     execvp("/usr/bin/mpg123", commandz);
                     exit(0);
                 }
@@ -221,7 +232,7 @@ int main() {
             update_playlist(temp, sd);
             commandz = get_playlist_commands(a);
         }
-       if (!strcmp(s, "server")){
+       else if (!strcmp(s, "server")){
           int to_server;
           int from_server;
           char buffer[BUFFER_SIZE];

@@ -22,13 +22,13 @@
 
 struct song_node * playlist;
 
-/*
+
 union semun {
                 int              val;
                 struct semid_ds *buf;
                 unsigned short  *array;
                 struct seminfo  *__buf;  
-            }; */
+            }; 
 
 //Creates New Playlist File and Semaphore
 //Returns Semaphore descriptor
