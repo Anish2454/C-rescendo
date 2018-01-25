@@ -129,8 +129,9 @@ char** end_vote(int sd){
 	sb.sem_num = 0;
 	sb.sem_flg = SEM_UNDO;
 	semop(sd, &sb, 1);
-
+  view_playlist(sd);
   playlist = sort_by_votes(playlist);
+  view_playlist(sd);
   char** commands = (char**) calloc(2, sizeof(char*));
   commands[0] = "mpg123";
   char* command = calloc(100, sizeof(char));
@@ -148,7 +149,7 @@ void subserver(int from_client, int sd) {
   int to_client = server_connect(from_client);
   char* buff = (char*) calloc((BUFFER_SIZE / sizeof(char)), sizeof(char));
   while(read(from_client, buff, BUFFER_SIZE)){
-    printf("[subserver] recieved: [%s]\n", buff);
+    printf("[subserver] received: [%s]\n", buff);
     char** args = separate_line(buff, "-");
     if (!strcmp(args[0], "vote")){
       char* name = args[1];
@@ -190,7 +191,7 @@ int main(){
   //^^^^MAKE SURE THIS IS A GOOD FORMAT
   fgets(s, 50, stdin);
   int f1 = fork();
-  if(!f1){
+  if(f1){
     printf("Forked. Waiting [%d] minutes to play playlist\n", atoi(s));
     /*
     int msec = 0, trigger = 30000; //(atoi(s) * 60 * 1000);
@@ -205,13 +206,14 @@ int main(){
     } while ( msec < trigger );
     printf("Time taken %d seconds %d milliseconds (%d iterations)\n",
     msec/1000, msec%1000, iterations); */
-    sleep(10000);
-    while(1){
+    sleep(atoi(s) * 30);
+  //  while(1){
       //IMPLEMENT BREAK WHEN USER WANTS
       char** commands = end_vote(sd);
       printf("Playing Song...\n");
       execvp("/usr/local/bin/mpg123", commands);
-    }
+      exit(0);
+  //  }
     //PLAY PLAYLIST
     //RECIEVE SIGNAL TO
   }
@@ -225,10 +227,12 @@ int main(){
       if(!f2){
         printf("subserver created\n");
         subserver(from_client, sd);
+        exit(0);
       }
-      else{
+     // else{
         close(from_client);
-      }
+        exit(0);
+     // }
     }
   }
   /*

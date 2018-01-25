@@ -212,8 +212,8 @@ struct song_node* insert_in_order_by_vote(struct song_node* nodeFront, char* nam
   *p = new;
   while(node -> next){
     int cmp = songcmp_byvote(p, node -> next);
-    if(cmp <= 0){
-      if(songcmp_byvote(p, node) < 0){
+    if(cmp >= 0){
+      if(songcmp_byvote(p, node) > 0){
         p -> next = node;
         return p;
       }
@@ -224,7 +224,7 @@ struct song_node* insert_in_order_by_vote(struct song_node* nodeFront, char* nam
     }
     node = node -> next;
   }
-  if(songcmp_byvote(p, node) < 0) return insert_front(node, p-> name, p-> artist, p->file_name, p->votes);
+  if(songcmp_byvote(p, node) > 0) return insert_front(node, p-> name, p-> artist, p->file_name, p->votes);
   else node -> next = p;
   return nodeFront;
 }
