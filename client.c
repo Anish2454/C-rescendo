@@ -127,7 +127,7 @@ struct song_node * initialize_playlist(int sd) {
     int size = get_playlist_size();
     char * buff = malloc(size);
     strcpy(buff, view_playlist(sd));
-    printf("buffer: [%s]\n", buff);
+    printf("\n*** CURRENT PLAYLIST ***\n");
     // char ** separated_newline = separate_line(buff, "\n");
     // start added code
     int i = 0; 
@@ -150,28 +150,6 @@ struct song_node * initialize_playlist(int sd) {
     struct song_node * node = NULL;
     i = 0;
     while (separated_newline[i]) {
-        printf("separated newline: %s\n", separated_newline[i]);
-    /*    int j = 0;
-        int len = strlen(separated_newline[i]);
-        char * ugh = malloc(len);
-        strcpy(ugh, separated_newline[i]);
-        printf("ugh: %s\n", ugh);
-        while (ugh) {
-            song_line[j] = malloc(strlen(strsep(&ugh, "|")));
-            j++;
-        }
-        free(ugh);
-        ugh = malloc(len);
-        strcpy(ugh, separated_newline[i]);
-        j = 0; 
-        while (ugh) {
-            strcpy(song_line[j], strsep(&ugh, "|"));
-            j++;
-        }
-        free(ugh); */
-   //     int length = strlen(separated_newline[i]);
-     //   char arr[length]; 
-       // strcpy(arr, separated_newline[i]);
         char ** song_line = separate_line(separated_newline[i], "|");
         node = insert_in_order(node, song_line[0], song_line[1], song_line[2]); 
         i++; 
@@ -241,6 +219,33 @@ int main() {
             artist[strlen(artist)-1] = 0;
             file[strlen(file)-1] = 0;
             a = insert_in_order(a, name, artist, file);
+            print_list(a);
+            i = 1; 
+            temp = a;
+            update_playlist(temp, sd);
+            temp = a;
+            commandz = calloc(1, sizeof("mpg123"));
+            commandz[0] = "mpg123";
+            while (temp) {
+                commandz[i] = calloc(1, sizeof(temp->file_name));
+                commandz[i] = temp->file_name;
+                temp = temp -> next;
+                i++; 
+            }
+            commandz[i+1] = calloc(1, sizeof(char *));
+            commandz[i+1] = 0;  
+        }
+        else if (strcmp(s, "remove") == 0) {
+            printf("Song name: ");
+            char * name = malloc(50);
+            fgets(name, 50, stdin);
+            printf("Artist name: ");
+            char * artist = malloc(50);
+            fgets(artist, 50, stdin);
+            name[strlen(name)-1] = 0;
+            artist[strlen(artist)-1] = 0;
+            struct song_node * node = find_song(a, name, artist);
+            a = remove_node(a, node);
             print_list(a);
             i = 1; 
             temp = a;
