@@ -107,8 +107,19 @@ int vote(int val, char* name, char* artist, int sd){
   return 0;
 }
 
-int end_vote(){
+int end_vote(int sd){
+  //Down the semaphore
+	struct sembuf sb;
+	sb.sem_op = -1;
+	sb.sem_num = 0;
+	sb.sem_flg = SEM_UNDO;
+	semop(sd, &sb, 1);
+
   playlist = sort_by_votes(playlist);
+
+  //Up the semaphore
+  sb.sem_op = 1;
+  semop(sd, &sb, 1);
   return 0;
 }
 
@@ -126,7 +137,7 @@ int main(){
   vote(2, "Im a Believer", "Monkees", sd);
   vote(-1, "Im a Believer", "Monkees", sd);
   view_playlist(sd);
-  end_vote();
+  end_vote(sd);
   printf("\n");
   view_playlist(sd);
   printf("\n");
