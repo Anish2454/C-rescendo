@@ -250,10 +250,13 @@ int main(){
       printf("Playing Song...\n");
       int play_fork = fork();
       if(!play_fork){
-        execvp("/usr/local/bin/mpg123", commands);
+        execvp("/usr/bin/mpg123", commands);
+        exit(0);
       }
       else{
-        //WAIT
+	int status; 
+	wait(&status);
+	exit(0);
       }
     }
     //PLAY PLAYLIST
