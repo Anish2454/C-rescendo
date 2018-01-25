@@ -39,7 +39,7 @@ int get_playlist_size(){
   return sb.st_size;
 }
 
-char* view_playlist(int sd){
+void view_playlist(int sd){
   //Down the semaphore
 	struct sembuf sb;
 	sb.sem_op = -1;
@@ -62,7 +62,7 @@ char* view_playlist(int sd){
   //Up the semaphore
   sb.sem_op = 1;
   semop(sd, &sb, 1);
-  return buffer;
+  //return buffer;
 }
 
 int add_to_playlist(char* name, char* artist, char* file, int sd){
@@ -73,7 +73,7 @@ int add_to_playlist(char* name, char* artist, char* file, int sd){
 	sb.sem_flg = SEM_UNDO;
 	semop(sd, &sb, 1);
 
-  playlist = insert_front(playlist, name, artist, file);
+  playlist = insert_front(playlist, name, artist, file, 0);
   /*
   printf("Adding %s to Playlist\n", song);
   int fd = open(playlist_name, O_WRONLY, 0777);
@@ -91,7 +91,7 @@ int add_to_playlist(char* name, char* artist, char* file, int sd){
   return 0;
 }
 
-int vote(int val, char* name, char* artist){
+int vote(int val, char* name, char* artist, int sd){
   //Down the semaphore
 	struct sembuf sb;
 	sb.sem_op = -1;
@@ -107,11 +107,29 @@ int vote(int val, char* name, char* artist){
   return 0;
 }
 
+int end_vote(){
+  playlist = sort_by_votes(playlist);
+  return 0;
+}
+
 int main(){
   int sd = create_playlist();
-  add_to_playlist("Bodak Black", sd);
-  add_to_playlist("Hey Jude", sd);
-  printf("\n%s\n", view_playlist(sd));
+  add_to_playlist("Hey Jude", "The Beatles", "heyjude.mp3", sd);
+  add_to_playlist("Bodak Yellow", "Cardi B", "bodakyellow.mp3", sd);
+  add_to_playlist("Im a Believer", "Monkees", "believer.mp3", sd);
+  add_to_playlist("kobebryant", "Kobe Bryant", "kobebryant.mp3", sd);
+  add_to_playlist("Duck Song", "Banpreet", "ducksong.mp3", sd);
+  view_playlist(sd);
+  printf("\n");
+  vote(1, "kobebryant", "Kobe Bryant", sd);
+  vote(2, "Duck Song", "Banpreet", sd);
+  vote(2, "Im a Believer", "Monkees", sd);
+  vote(-1, "Im a Believer", "Monkees", sd);
+  view_playlist(sd);
+  end_vote();
+  printf("\n");
+  view_playlist(sd);
+  printf("\n");
 }
 
 
