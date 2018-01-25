@@ -11,10 +11,14 @@ char ** separate_line(char * line, char * delimeter) {
     strsep(&temp, delimeter);
     i++;
   }
+  free(temp);
   char** args = (char**) calloc(i, sizeof(char*));
   int counter = 0;
   while(line){
-    args[counter] = strsep(&line, delimeter);
+    char * s = strsep(&line, delimeter);
+    int length = strlen(s);
+    args[counter] = malloc(length);
+    args[counter] = s;
     counter++;
   }
   args[counter] = 0;
