@@ -1,5 +1,8 @@
 # Prerequisites
 *.d
+.nfs*
+client
+server
 
 # Object files
 *.o

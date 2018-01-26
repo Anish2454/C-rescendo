@@ -52,12 +52,16 @@ int create_playlist(){
 }
 
 int update_playlist(struct song_node * song, int sd){
-  //Down the semaphore
-	struct sembuf sb;
+  printf("really started update playlist\n");
+//Down the semaphore
+struct sembuf sb;
+  if(sd != -1){
 	sb.sem_op = -1;
 	sb.sem_num = 0;
 	sb.sem_flg = SEM_UNDO;
 	semop(sd, &sb, 1);
+  }
+  printf("started update_playlist\n");
   int fd = open(playlist_name, O_WRONLY | O_TRUNC, 0777);
   if (fd == -1) printf("Error: %s\n", strerror(errno));
   //lseek(fd, 0, SEEK_END);
@@ -76,11 +80,18 @@ int update_playlist(struct song_node * song, int sd){
     if (result == -1) printf("Error: %s\n", strerror(errno));
     song = song -> next;
   }
-  close(fd);
+  printf("end of updateplaylist\n");
+  int saved_flags = fcntl(fd, F_GETFL);
 
+// Set the new flags with O_NONBLOCK masked out
+
+fcntl(fd, F_SETFL, saved_flags & ~O_NONBLOCK);
+  close(fd);
+  printf("closing file descripor\n");
+  if(sd != -1){
   //Up the semaphore
   sb.sem_op = 1;
-  semop(sd, &sb, 1);
+  semop(sd, &sb, 1);}
   return 0;
 }
 
@@ -93,12 +104,13 @@ int get_playlist_size(){
 
 char* view_playlist(int sd){
   //Down the semaphore
-	struct sembuf sb;
+struct sembuf sb;
+  if(sd!=-1){
 	sb.sem_op = -1;
 	sb.sem_num = 0;
 	sb.sem_flg = SEM_UNDO;
 	semop(sd, &sb, 1);
-
+}
   int size = get_playlist_size();
  // printf("Viewing Playlist\n");
   int fd = open(playlist_name, O_RDONLY, 0777);
@@ -108,9 +120,11 @@ char* view_playlist(int sd){
   if (result == -1) printf("Error: %s\n", strerror(errno));
   close(fd);
 
+  if(sd!=-1){
   //Up the semaphore
   sb.sem_op = 1;
   semop(sd, &sb, 1);
+}
   return buffer;
 }
 
@@ -118,16 +132,19 @@ struct song_node * initialize_playlist(int sd) {
     int size = get_playlist_size();
     char * buff = malloc(size);
     strcpy(buff, view_playlist(sd));
+    printf("buff: %s\n", buff);
     printf("\n*** CURRENT PLAYLIST ***\n");
     // char ** separated_newline = separate_line(buff, "\n");
     // start added code
     int i = 0;
     char * temp = malloc(strlen(buff));
     strcpy(temp, buff);
+   printf("temp: %s\n", temp);
     while (temp) {
         strsep(&temp, "\n");
         i++;
     }
+printf("HALFWAY Got through initialized playlist\n");
     free(temp);
     char * separated_newline[i];
     i = 0;
@@ -141,10 +158,13 @@ struct song_node * initialize_playlist(int sd) {
     struct song_node * node = NULL;
     i = 0;
     while (separated_newline[i]) {
+	printf("inside sep newline\n");
         char ** song_line = separate_line(separated_newline[i], "|");
         node = insert_in_order_by_vote(node, song_line[0], song_line[1], song_line[2], atoi(song_line[3]));
         i++;
     }
+   printf("Got through initialized playlist\n");
+  print_list(node);
     return node;
 }
 
@@ -155,8 +175,12 @@ int vote(struct song_node * playlist, int val, char* name, char* artist, int sd)
 	sb.sem_num = 0;
 	sb.sem_flg = SEM_UNDO;
 	semop(sd, &sb, 1);
-
+  playlist = initialize_playlist(-1);
   playlist = add_votes(playlist, name, artist, val);
+  printf("got throuhg add_votes\n");
+  struct song_node* temp = playlist;
+  printf("got thorugh temp node\n");
+  update_playlist(temp, -1);
   print_list(playlist);
 
   //Up the semaphore
@@ -192,7 +216,6 @@ char** end_vote(struct song_node * playlist, int sd){
 }
 
 void subserver(struct song_node * playlist, int from_client, int sd) {
-  int to_client = server_connect(from_client);
   char* buff = (char*) calloc((BUFFER_SIZE / sizeof(char)), sizeof(char));
   while(read(from_client, buff, BUFFER_SIZE)){
     printf("[subserver] received: [%s]\n", buff);
@@ -205,22 +228,23 @@ void subserver(struct song_node * playlist, int from_client, int sd) {
         vote(playlist, 1, name, artist, sd);
         char resp[100];
         sprintf(resp, "Voted For: %s", name);
-        write(to_client, resp, sizeof(resp));
+        write(from_client, resp, sizeof(resp));
         struct song_node * temp = playlist;
         printf("SUBSERVER PLAYLIST\n");
+        playlist = initialize_playlist(sd);
         print_list(playlist);
-        update_playlist(temp, sd);
       }
       else{
         //SONG NOT IN PLAYLIST - TRANSFER MP3
         char resp[] = "SONG DOESNT EXIST";
-        write(to_client, resp, sizeof(resp));
+        write(from_client, resp, sizeof(resp));
       }
     }
     else if (!strcmp(args[0], "view")){
       //Redirect view_playlist output from stdout to pipe
+      playlist = initialize_playlist(sd);
       int stdout = dup(STDOUT_FILENO);
-    	int before = dup2(to_client, STDOUT_FILENO);
+      int before = dup2(from_client, STDOUT_FILENO);
       print_list(playlist);
       dup2(stdout, before);
     }
@@ -239,6 +263,7 @@ int main(){
  // a = insert_in_order(a, "I'm a Believer", "Monkees", "believer.mp3");
  // a = insert_in_order(a, "kobebryant", "Kobe Bryant", "kobebryant.mp3");
   a = insert_in_order(a, "Duck Song", "Banpreet", "ducksong.mp3");
+  update_playlist(a, sd);
  /* add_to_playlist("Hey Jude", "Beatles", "heyjude.mp3", sd);
   add_to_playlist("Bodak Yellow", "Cardi B", "bodakyellow.mp3", sd);
   add_to_playlist("Im a Believer", "Monkees", "believer.mp3", sd);
