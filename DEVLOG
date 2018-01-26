@@ -23,16 +23,21 @@ Proj 2 Enterprise
 Anish & Ashneel :: WHATEVER YOU GUYS DID
 ==============================================================
 
-2017-12-?
+2017-12-28
 --------------------------------------------------------------
-Anish & Ashneel :: WHATEVER YOU GUYS DID
+Anish, Ashneel, & Jasper :: 
+-Decided against using the wavplay library because it is outdated.
+-Started looking into alternatives; decided on mpg123. 
 ==============================================================
-
+2018-1-12
+--------------------------------------------------------------
+-Started using mpg123 to write basic programs on Mac, did not test on Ubuntu
+==============================================================
 2018-1-24
 --------------------------------------------------------------
-Anish ::  Sever things
-Ashneel :: Client side playlist with file
-Anish & Ashneel :: Server Client can kinda communicate
+Anish ::  Worked on creating working forking server locally
+Ashneel :: Client side playlist stored in file and linked list
+Anish & Ashneel :: Connected server and client for basic communication
 ==============================================================
 
 2018-1-25
@@ -42,16 +47,16 @@ Anish, Ashneel, & Jasper :: -Fixed viewing local playlist
 -handshake works!
 -can add to server side
 -semaphore when viewing and adding and voting
--working on shared memory
+-working on shared memory (decided against using this in the end)
 -finished client side functions
--exported functionaliblity from mac to ubuntu
+-exported functionality from Mac to Ubuntu
 -serverside playlisting and functions moved to a file
 ==============================================================
 
 2018-1-26
 --------------------------------------------------------------
-Ashneel :: More serverside file functionability
-Anish :: NETWORKING, getting the server and clients to communticate through networks
+Ashneel :: Updated the server to match the client with file/linked list functionality.
+Anish :: NETWORKING, getting the server and clients to communicate through networks
 Jasper :: Devlog, Readme
 ==============================================================
 
