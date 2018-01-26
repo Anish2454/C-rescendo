@@ -19,14 +19,14 @@
 
 //Creates New Playlist File and Semaphore
 //Returns Semaphore descriptor
-/*
+
 union semun {
                int              val;
                struct semid_ds *buf;
                unsigned short  *array;
                struct seminfo  *__buf;
 
-           };*/
+           };
 
 
 static void sighandler(int signo) {
@@ -280,7 +280,7 @@ int main(){
       count++;
       int d = fork();
       if (!d) {
-        execvp("/usr/local/bin/mpg123", commands);
+        execvp("/usr/bin/mpg123", commands);
         exit(0);
       }
       else {
