@@ -25,9 +25,9 @@ Anish & Ashneel :: WHATEVER YOU GUYS DID
 
 2017-12-28
 --------------------------------------------------------------
-Anish, Ashneel, & Jasper :: 
+Anish, Ashneel, & Jasper ::
 -Decided against using the wavplay library because it is outdated.
--Started looking into alternatives; decided on mpg123. 
+-Started looking into alternatives; decided on mpg123.
 ==============================================================
 2018-1-12
 --------------------------------------------------------------
@@ -47,7 +47,7 @@ Anish, Ashneel, & Jasper :: -Fixed viewing local playlist
 -handshake works!
 -can add to server side
 -semaphore when viewing and adding and voting
--working on shared memory (decided against using this in the end)
+-working on shared memory
 -finished client side functions
 -exported functionality from Mac to Ubuntu
 -serverside playlisting and functions moved to a file
@@ -55,17 +55,13 @@ Anish, Ashneel, & Jasper :: -Fixed viewing local playlist
 
 2018-1-26
 --------------------------------------------------------------
+Anish: Major issues with shared memory and linux machines
+Decided to abandon plan of storing shared playlist as shared memory
+Pivoted to storing the shared playlist as a file 
+
+2018-1-26
+--------------------------------------------------------------
 Ashneel :: Updated the server to match the client with file/linked list functionality.
 Anish :: NETWORKING, getting the server and clients to communicate through networks
 Jasper :: Devlog, Readme
 ==============================================================
-
-
-
-
-
-
-
-
-
-
