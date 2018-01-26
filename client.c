@@ -17,14 +17,14 @@
 #define KEY 5678
 #define playlist_name "client_playlist"
 
-/*
+
 union semun {
                int              val;
                struct semid_ds *buf;
                unsigned short  *array;
                struct seminfo  *__buf;
 
-           }; */
+           }; 
 
 int create_playlist(){
   printf("Creating Playlist File...\n");
