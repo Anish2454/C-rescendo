@@ -171,20 +171,30 @@ int main() {
         if (strcmp(s, "stop") == 0)
             exit(0);
         else if (strcmp(s, "play") == 0) {
-            int f = fork();
-            if (!f) {
-                if (!a) {
-                    printf("Can't play, playlist is empty\n");
-                    exit(0);
-                }
+            int i = 1;
+            while (commandz[i]) {
+                int f = fork();
+                if (!f) {
+                    if (!a) {
+                        printf("Can't play, playlist is empty\n");
+                        exit(0);
+                    }
+                    else {
+                        printf("i: %s\n", commandz[i]);
+                        char ** arr = calloc(4, sizeof(char *));
+                        arr[0] = "mpg123";
+                        arr[1] = "-C";
+                        arr[2] = commandz[i];
+                        arr[3] = NULL;
+                        execvp("/usr/bin/mpg123", arr);
+                        exit(0);
+                    }
+                 }
                 else {
-                    execvp("/usr/bin/mpg123", commandz);
-                    exit(0);
+                    int status;
+                    int child_pid = wait(&status);
                 }
-            }
-            else {
-                int status;
-                int child_pid = wait(&status);
+                i++;
             }
         }
         else if (strcmp(s, "add") == 0) {
@@ -205,6 +215,9 @@ int main() {
             temp = a;
             update_playlist(temp, sd);
             commandz = get_playlist_commands(a);
+        }
+	else if (strcmp(s, "view") == 0) {
+                print_list(a);
         }
         else if (strcmp(s, "remove") == 0) {
             printf("Song name: ");
