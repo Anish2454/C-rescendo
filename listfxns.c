@@ -122,13 +122,13 @@ struct song_node* find_song(struct song_node* real, char* name, char* artist){
   char* name_lower = convert_lower(name);
   char* artist_lower = convert_lower(artist);
   struct song_node* list = real;
-  printf("got through convert_lower\n");
+  //printf("got through convert_lower\n");
   while(list){
-    printf("loop\n");
+    //printf("loop\n");
     char* list_name = convert_lower(list -> name);
     char* list_artist = convert_lower(list -> artist);
     if(!strcmp(list_name, name_lower) && !strcmp(list_artist, artist_lower)){
-      printf("found!\n");
+      //printf("found!\n");
       free(name_lower);
       free(artist_lower);
       free(list_name);
@@ -139,7 +139,7 @@ struct song_node* find_song(struct song_node* real, char* name, char* artist){
     free(list_name);
     free(list_artist);
   }
-  printf("not found\n");
+  //printf("not found\n");
   free(name_lower);
   free(artist_lower);
   return NULL;
@@ -192,9 +192,9 @@ struct song_node* random_node(struct song_node* list){
 }
 
 struct song_node* add_votes(struct song_node* list, char*name, char*artist, int val){
-  printf("started add_votes\n");
+  //printf("started add_votes\n");
   struct song_node* song = find_song(list, name, artist);
-  printf("got through find_song\n");
+  //printf("got through find_song\n");
   song -> votes = (song -> votes) + val;
   return list;
 }

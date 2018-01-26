@@ -39,7 +39,7 @@ static void sighandler(int signo) {
 int create_playlist(){
   printf("Creating Playlist File...\n");
   int fd = open(playlist_name, O_EXCL|O_CREAT, 0777);
-  if (fd == -1) printf("Error: %s\n", strerror(errno));
+  //if (fd == -1) printf("Error: %s\n", strerror(errno));
   printf("Creating Playlist Semaphore...\n");
   int sd = semget(KEY, 1, 0777|IPC_CREAT|IPC_EXCL);
   if (sd == -1) printf("Error: %s\n", strerror(errno));
@@ -52,7 +52,7 @@ int create_playlist(){
 }
 
 int update_playlist(struct song_node * song, int sd){
-  printf("really started update playlist\n");
+  //printf("really started update playlist\n");
 //Down the semaphore
 struct sembuf sb;
   if(sd != -1){
@@ -61,7 +61,7 @@ struct sembuf sb;
 	sb.sem_flg = SEM_UNDO;
 	semop(sd, &sb, 1);
   }
-  printf("started update_playlist\n");
+  //printf("started update_playlist\n");
   int fd = open(playlist_name, O_WRONLY | O_TRUNC, 0777);
   if (fd == -1) printf("Error: %s\n", strerror(errno));
   //lseek(fd, 0, SEEK_END);
@@ -80,14 +80,14 @@ struct sembuf sb;
     if (result == -1) printf("Error: %s\n", strerror(errno));
     song = song -> next;
   }
-  printf("end of updateplaylist\n");
-  int saved_flags = fcntl(fd, F_GETFL);
+  //printf("end of updateplaylist\n");
+  //int saved_flags = fcntl(fd, F_GETFL);
 
 // Set the new flags with O_NONBLOCK masked out
 
-fcntl(fd, F_SETFL, saved_flags & ~O_NONBLOCK);
+  //fcntl(fd, F_SETFL, saved_flags & ~O_NONBLOCK);
   close(fd);
-  printf("closing file descripor\n");
+  //printf("closing file descripor\n");
   if(sd != -1){
   //Up the semaphore
   sb.sem_op = 1;
@@ -96,7 +96,7 @@ fcntl(fd, F_SETFL, saved_flags & ~O_NONBLOCK);
 }
 
 int get_playlist_size(){
-  printf("Getting size of playlist\n");
+  //printf("Getting size of playlist\n");
   struct stat sb;
   stat(playlist_name, &sb);
   return sb.st_size;
@@ -104,13 +104,13 @@ int get_playlist_size(){
 
 char* view_playlist(int sd){
   //Down the semaphore
-struct sembuf sb;
-  if(sd!=-1){
-	sb.sem_op = -1;
-	sb.sem_num = 0;
-	sb.sem_flg = SEM_UNDO;
-	semop(sd, &sb, 1);
-}
+  struct sembuf sb;
+    if(sd!=-1){
+	  sb.sem_op = -1;
+	  sb.sem_num = 0;
+	  sb.sem_flg = SEM_UNDO;
+	  semop(sd, &sb, 1);
+  }
   int size = get_playlist_size();
  // printf("Viewing Playlist\n");
   int fd = open(playlist_name, O_RDONLY, 0777);
@@ -121,10 +121,10 @@ struct sembuf sb;
   close(fd);
 
   if(sd!=-1){
-  //Up the semaphore
-  sb.sem_op = 1;
-  semop(sd, &sb, 1);
-}
+    //Up the semaphore
+    sb.sem_op = 1;
+    semop(sd, &sb, 1);
+  }
   return buffer;
 }
 
@@ -132,19 +132,19 @@ struct song_node * initialize_playlist(int sd) {
     int size = get_playlist_size();
     char * buff = malloc(size);
     strcpy(buff, view_playlist(sd));
-    printf("buff: %s\n", buff);
-    printf("\n*** CURRENT PLAYLIST ***\n");
+    //printf("buff: %s\n", buff);
+    //printf("\n*** CURRENT PLAYLIST ***\n");
     // char ** separated_newline = separate_line(buff, "\n");
     // start added code
     int i = 0;
     char * temp = malloc(strlen(buff));
     strcpy(temp, buff);
-   printf("temp: %s\n", temp);
+    //printf("temp: %s\n", temp);
     while (temp) {
         strsep(&temp, "\n");
         i++;
     }
-printf("HALFWAY Got through initialized playlist\n");
+    //printf("HALFWAY Got through initialized playlist\n");
     free(temp);
     char * separated_newline[i];
     i = 0;
@@ -158,13 +158,13 @@ printf("HALFWAY Got through initialized playlist\n");
     struct song_node * node = NULL;
     i = 0;
     while (separated_newline[i]) {
-	printf("inside sep newline\n");
+	  //printf("inside sep newline\n");
         char ** song_line = separate_line(separated_newline[i], "|");
         node = insert_in_order_by_vote(node, song_line[0], song_line[1], song_line[2], atoi(song_line[3]));
         i++;
     }
-   printf("Got through initialized playlist\n");
-  print_list(node);
+    //printf("Got through initialized playlist\n");
+    //print_list(node);
     return node;
 }
 
@@ -177,11 +177,11 @@ int vote(struct song_node * playlist, int val, char* name, char* artist, int sd)
 	semop(sd, &sb, 1);
   playlist = initialize_playlist(-1);
   playlist = add_votes(playlist, name, artist, val);
-  printf("got throuhg add_votes\n");
+  //printf("got throuhg add_votes\n");
   struct song_node* temp = playlist;
-  printf("got thorugh temp node\n");
+  //printf("got thorugh temp node\n");
   update_playlist(temp, -1);
-  print_list(playlist);
+  //print_list(playlist);
 
   //Up the semaphore
   sb.sem_op = 1;
@@ -197,9 +197,9 @@ char** end_vote(struct song_node * playlist, int sd){
 	sb.sem_num = 0;
 	sb.sem_flg = SEM_UNDO;
 	semop(sd, &sb, 1);
-  print_list(playlist);
+  //print_list(playlist);
   playlist = sort_by_votes(playlist);
-  print_list(playlist);
+  //print_list(playlist);
   char** commands = (char**) calloc(4, sizeof(char*));
   commands[0] = "mpg123";
   char* command = calloc(100, sizeof(char));
@@ -230,9 +230,9 @@ void subserver(struct song_node * playlist, int from_client, int sd) {
         sprintf(resp, "Voted For: %s", name);
         write(from_client, resp, sizeof(resp));
         struct song_node * temp = playlist;
-        printf("SUBSERVER PLAYLIST\n");
+        //printf("SUBSERVER PLAYLIST\n");
         playlist = initialize_playlist(sd);
-        print_list(playlist);
+        //print_list(playlist);
       }
       else{
         //SONG NOT IN PLAYLIST - TRANSFER MP3
@@ -256,15 +256,15 @@ void subserver(struct song_node * playlist, int from_client, int sd) {
 int main(){
   int sd = create_playlist();
   struct song_node * a = initialize_playlist(sd);
-  print_list(a);
+  //print_list(a);
   signal(SIGINT,sighandler);
-   a = insert_in_order(a, "Hey Jude", "Beatles", "heyjude.mp3");
+  a = insert_in_order(a, "Hey Jude", "Beatles", "heyjude.mp3");
   a = insert_in_order(a, "Bodak Yellow", "Cardi B", "bodakyellow.mp3");
- // a = insert_in_order(a, "I'm a Believer", "Monkees", "believer.mp3");
- // a = insert_in_order(a, "kobebryant", "Kobe Bryant", "kobebryant.mp3");
+  // a = insert_in_order(a, "I'm a Believer", "Monkees", "believer.mp3");
+  // a = insert_in_order(a, "kobebryant", "Kobe Bryant", "kobebryant.mp3");
   a = insert_in_order(a, "Duck Song", "Banpreet", "ducksong.mp3");
   update_playlist(a, sd);
- /* add_to_playlist("Hey Jude", "Beatles", "heyjude.mp3", sd);
+  /* add_to_playlist("Hey Jude", "Beatles", "heyjude.mp3", sd);
   add_to_playlist("Bodak Yellow", "Cardi B", "bodakyellow.mp3", sd);
   add_to_playlist("Im a Believer", "Monkees", "believer.mp3", sd);
   add_to_playlist("kobebryant", "Kobe Bryant", "kobebryant.mp3", sd);
@@ -277,24 +277,9 @@ int main(){
   int f1 = fork();
   if(f1){
     printf("Forked. Waiting [%d] minutes to play playlist\n", atoi(s));
-    /*
-    int msec = 0, trigger = 30000; //(atoi(s) * 60 * 1000);
-    clock_t before = clock();
-    int iterations = 0;
-    do {
-      sleep(1);
-      printf("msec: %d", msec);
-      clock_t difference = clock() - before;
-      msec = difference * 1000 / CLOCKS_PER_SEC;
-      iterations++;
-    } while ( msec < trigger );
-    printf("Time taken %d seconds %d milliseconds (%d iterations)\n",
-    msec/1000, msec%1000, iterations); */
-    sleep(atoi(s) * 30);
+    sleep(atoi(s) * 60);
     int count = 0;
     while(a){
-      if (count > 3) break;
-      //IMPLEMENT BREAK WHEN USER WANTS
       a = initialize_playlist(sd);
       char** commands = end_vote(a, sd);
       print_list(a);
@@ -302,7 +287,8 @@ int main(){
       struct song_node * temp = a;
       update_playlist(temp, sd);
       printf("Playing Song...\n");
-      count++;
+      printf("Press Q to go to the next song\n");
+      //count++;
       int d = fork();
       if (!d) {
         execvp("/usr/bin/mpg123", commands);
@@ -311,7 +297,7 @@ int main(){
       else {
         int status;
         waitpid(d, &status, 0);
-	printf("Child Finished PLaying Song\n");
+	      //printf("Child Finished PLaying Song\n");
       }
       //exit(0);
     }
@@ -327,7 +313,7 @@ int main(){
       int client_socket = server_connect(listen_socket);
       f2 = fork();
       if (f2 == 0){
-        printf("subserver created\n");
+        printf("Subserver created\n");
         subserver(a, client_socket, sd);
       }
       else{

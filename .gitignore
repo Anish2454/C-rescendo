@@ -3,6 +3,8 @@
 .nfs*
 client
 server
+client_playlist
+server_playlists
 
 # Object files
 *.o
