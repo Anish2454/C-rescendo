@@ -25,12 +25,12 @@ $ sudo apt-get install mpg123
 8. `view` to view client(local) playlist
 ## Server-Side
 1. In another computer open the server with `$ ./server`
-2. Type the how long the waits server to start playing the first song
-3. Server will listen for connections and votes
+2. Similar to the client, you can add songs to the playlist with the `add` command. New songs are set to 0 votes
+3. Enter how long users have to vote before the server starts playing the first song.
+4. Server will listen for connections and votes.
 ## Connected
 1. Once you run server, you can connect to the server with your clients
-by using `server` and giving the ip of the server. You can then
-specify the amount of time to wait for initial votes. 
+by entering `server` from the client and giving the ip of the server. 
 2. On the client you can vote for songs with `vote -<song name> -<artist>`
 3. You can also view the shared playlist on the client with `view`
 4. The Server will take in the votes and play what has the most votes
