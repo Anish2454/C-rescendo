@@ -11,6 +11,9 @@
 #include <unistd.h>
 #include "lib.h"
 #include "listfxns.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/uio.h>
 #include "networking.h"
 #include "parsing.h"
 
@@ -22,7 +25,7 @@
                struct semid_ds *buf;
                unsigned short  *array;
                struct seminfo  *__buf;
- 
+
            };  */
 
 int create_playlist(){
@@ -253,8 +256,74 @@ int main() {
             write(server_socket, buffer, sizeof(buffer));
             read(server_socket, buffer, sizeof(buffer));
             printf("received: [%s]\n", buffer);
-          }
+            /*
+            if(strcmp(buffer, "SONG DOESNT EXIST") == 0){
+              printf("That song wasnt found! Let's send it over.\n");
+              printf("enter song name: ");
+              fgets(buffer, sizeof(buffer), stdin);
+              *strchr(buffer, '\n') = 0;
+              write(server_socket, buffer, sizeof(buffer));
+              read(server_socket, buffer, sizeof(buffer));
+              if(strcmp("name received", buffer) == 0){
+                printf("enter song artist: ");
+                fgets(buffer, sizeof(buffer), stdin);
+                *strchr(buffer, '\n') = 0;
+                write(server_socket, buffer, sizeof(buffer));
+                read(server_socket, buffer, sizeof(buffer));
+                printf("artist: %s\n", buffer);
+                if(strcmp("artist received", buffer) == 0){
+                  printf("enter mp3 filename: ");
+                  fgets(buffer, sizeof(buffer), stdin);
+                  *strchr(buffer, '\n') = 0;
+                  char buffer2[256];
+                  int sent_count;  how many sending chunks, for debugging
+                  ssize_t read_bytes,  bytes read from local file
+                  sent_bytes,  bytes sent to connected socket
+                  sent_file_size;
+                  struct stat sb;
+                  char send_buf[2000];
+                  int fd = open(buffer, O_RDONLY, 0777);
+                  fstat( fd, &sb );
+                  printf("client: fd: %d\n", fd);
+                  //write(server_socket, &sb.st_size, sizeof(sb.st_size));
+                  while( (read_bytes = read(fd, send_buf, 2000)) > 0 ){
+                    if( (sent_bytes = send(server_socket, send_buf, read_bytes, 0)) < read_bytes ) {
+                      printf("error\n");
+                      return -1;
+                    }
+                    sent_count++;
+                    sent_file_size += sent_bytes;
+                  }
+                  printf("sent\n");
+                  close(fd);
+                  while (1) {
+                    // Read data into buffer.  We may not have enough to fill up buffer, so we
+                    // store how many bytes were actually read in bytes_read.
+                    int bytes_read = read(fd, buffer2, sizeof(buffer2));
+                    if (bytes_read == 0) // We're done reading from the file
+                      break;
+
+                    if (bytes_read < 0) {
+                      //error("ERROR reading from file");
+                    }
+
+                    // You need a loop for the write, because not all of the data may be written
+                    // in one call; write will return how many bytes were written. p keeps
+                    // track of where in the buffer we are, while we decrement bytes_read
+                    // to keep track of how many bytes are left to write.
+                    void *p = buffer2;
+                    while (bytes_read > 0) {
+                      int bytes_written = write(server_socket, buffer2, bytes_read);
+                      if (bytes_written <= 0){
+                        //error("ERROR writing to socket\n");
+                        printf("ERROR WRITING MP3\n");
+                      }
+                      bytes_read -= bytes_written;
+                      p += bytes_written;
+                    }
+                  } */
+                }
+              }
+            }
+          return 0;
         }
-    }
-    return 0;
-}

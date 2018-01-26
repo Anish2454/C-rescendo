@@ -14,19 +14,21 @@
 #include "networking.h"
 #include "server.h"
 #include "parsing.h"
+#include <sys/socket.h>
+#include <sys/uio.h>
 #include <signal.h>
 #include <time.h>
 
 //Creates New Playlist File and Semaphore
 //Returns Semaphore descriptor
 
-union semun {
+/*union semun {
                int              val;
                struct semid_ds *buf;
                unsigned short  *array;
                struct seminfo  *__buf;
 
-           };
+           }; */
 
 
 static void sighandler(int signo) {
@@ -236,8 +238,43 @@ void subserver(struct song_node * playlist, int from_client, int sd) {
       }
       else{
         //SONG NOT IN PLAYLIST - TRANSFER MP3
+        printf("Song Not In Playlist!");
+        /*
         char resp[] = "SONG DOESNT EXIST";
         write(from_client, resp, sizeof(resp));
+        char name[100];
+        read(from_client, name, sizeof(name));
+        char resp2[] = "name received";
+        write(from_client, resp2, sizeof(resp2));
+        char artist[100];
+        read(from_client, artist, sizeof(artist));
+        printf("artist server: %s\n", artist);
+        char resp3[] = "artist received";
+        write(from_client, resp3, sizeof(resp3));
+        char recv_str[256];
+        int fd = open(name, O_CREAT|O_WRONLY, 0666);
+        int recv_count;
+        ssize_t sent_bytes, rcvd_bytes, rcvd_file_size;
+        recv_count = 0;  number of recv() calls required to receive the file
+        rcvd_file_size = 0;
+        size_t filesize;
+        //read(from_client, &filesize, sizeof(filesize));
+        printf("Size: %zu\n", filesize);  size of received file
+        while ( (rcvd_bytes = recv(from_client, recv_str, 256, 0)) > 0 ){
+          recv_count++;
+          rcvd_file_size += rcvd_bytes;
+          if (rcvd_file_size > 12000000) break;
+          //if(rcvd_file_size >= filesize-5) break;
+          if (write(fd, recv_str, rcvd_bytes) < 0 ){
+            perror("error writing to file");
+          }
+        }
+        close(fd);
+        printf("here\n");
+        playlist = insert_in_order(playlist, name, artist, name);
+        vote(playlist, 1, name, artist, sd);
+        struct song_node* temp = playlist;
+        update_playlist(temp, sd);*/
       }
     }
     else if (!strcmp(args[0], "view")){
@@ -269,6 +306,40 @@ int main(){
   add_to_playlist("Im a Believer", "Monkees", "believer.mp3", sd);
   add_to_playlist("kobebryant", "Kobe Bryant", "kobebryant.mp3", sd);
   add_to_playlist("Duck Song", "Banpreet", "ducksong.mp3", sd); */
+  while (1) {
+    printf("Type add to add a song to the playlist\n");
+    printf("Type start to start voting!\n");
+    printf("Enter a command: ");
+    char resp[50];
+    fgets(resp, 50, stdin);
+    resp[strlen(resp)-1] = 0;
+    if (strcmp(resp, "add") == 0) {
+      printf("Song name: ");
+      char * name = malloc(50);
+      fgets(name, 50, stdin);
+      printf("Artist name: ");
+      char * artist = malloc(50);
+      fgets(artist, 50, stdin);
+      printf("mp3 file name: ");
+      char * file = malloc(50);
+      fgets(file, 50, stdin);
+      name[strlen(name)-1] = 0;
+      artist[strlen(artist)-1] = 0;
+      file[strlen(file)-1] = 0;
+      struct song_node * node = find_song(a, name, artist);
+      if (!node) {
+          a = insert_in_order(a, name, artist, file);
+      }
+      else {
+          printf("Song already in playlist!\n");
+      }
+    }
+    else if (strcmp(resp, "start") == 0)
+      break;
+    else
+      printf("Invalid command!\n");
+  }
+  update_playlist(a, sd);
   printf("Enter number of minutes before voting for first song closes: ");
   //print_list(a);
   char s[50];
