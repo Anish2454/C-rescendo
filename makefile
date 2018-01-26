@@ -24,6 +24,7 @@ clean:
 	rm client
 	rm *.o
 	rm PLAYLIST.txt
+	rm server_playlist
 
 run: all
 	./client
