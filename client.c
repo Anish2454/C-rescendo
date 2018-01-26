@@ -7,24 +7,24 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #include "lib.h"
 #include "listfxns.h"
 #include "pipe_networking.h"
 #include "parsing.h"
-#include <sys/shm.h>
 
 #define KEY 5678
 #define playlist_name "client_playlist"
 
-union semun {
-               int              val;
-                struct semid_ds *buf;
-                unsigned short  *array;
-                struct seminfo  *__buf;  
-            };
-
+/*union semun {
+               int              val;  
+               struct semid_ds *buf;  
+               unsigned short  *array;  
+               struct seminfo  *__buf;  
+                                      
+           };
+*/
 int create_playlist(){
   printf("Creating Playlist File...\n");
   int fd = open(playlist_name, O_EXCL|O_CREAT, 0777);
@@ -135,18 +135,12 @@ struct song_node * initialize_playlist(int sd) {
 
 char** get_playlist_commands(struct song_node* a){
   struct song_node* temp = a;
-  int i = 0; 
-  while (temp) {
-      temp = temp -> next; 
-      i++;
-  }
-  char** commandz = calloc(i+1, sizeof(char *));
+  char** commandz = calloc(1, sizeof("mpg123"));
   commandz[0] = "mpg123";
-  i = 1;
-  temp = a;
+  int i = 1;
   while (temp) {
       commandz[i] = calloc(1, sizeof(temp->file_name));
-      strcpy(commandz[i], temp -> file_name);
+      commandz[i] = temp->file_name;
       temp = temp -> next;
       i++;
   }
@@ -183,12 +177,7 @@ int main() {
                     exit(0);
                 }
                 else {
-		    int i = 0; 
-		    while (commandz[i]) {
-			printf("commandz[%d]: [%s]\n", i, commandz[i]);
-			i++;
-		    }
-                    execvp("/usr/bin/mpg123", commandz);
+                    execvp("/usr/local/bin/mpg123", commandz);
                     exit(0);
                 }
             }
@@ -226,13 +215,13 @@ int main() {
             name[strlen(name)-1] = 0;
             artist[strlen(artist)-1] = 0;
             struct song_node * node = find_song(a, name, artist);
-            remove_node(a, node);
+            a = remove_node(a, node);
             print_list(a);
             temp = a;
             update_playlist(temp, sd);
             commandz = get_playlist_commands(a);
         }
-       else if (!strcmp(s, "server")){
+        else if (!strcmp(s, "server")){
           int to_server;
           int from_server;
           char buffer[BUFFER_SIZE];
