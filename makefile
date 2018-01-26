@@ -1,6 +1,6 @@
-all: listfxns.o lib.o client.o server.o pipe_networking.o parsing.o
-	gcc -o client listfxns.o client.o lib.o pipe_networking.o parsing.o
-	gcc -o server listfxns.o server.o pipe_networking.o parsing.o
+all: listfxns.o lib.o client.o server.o networking.o parsing.o
+	gcc -o client listfxns.o client.o lib.o networking.o parsing.o
+	gcc -o server listfxns.o server.o networking.o parsing.o
 
 listfxns.o: listfxns.c listfxns.h
 	gcc -c listfxns.c
@@ -14,8 +14,8 @@ client.o: client.c listfxns.h lib.h
 server.o: server.c server.h
 	gcc -c server.c
 
-pipe_networking.o: pipe_networking.c pipe_networking.h
-	gcc -c pipe_networking.c
+networking.o: networking.c networking.h
+	gcc -c networking.c
 
 parsing.o: parsing.c parsing.h
 	gcc -c parsing.c
