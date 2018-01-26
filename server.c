@@ -28,7 +28,7 @@ union semun {
                unsigned short  *array;
                struct seminfo  *__buf;
 
-           }; 
+           };
 
 
 static void sighandler(int signo) {
@@ -295,14 +295,12 @@ int main(){
   struct song_node * a = initialize_playlist(sd);
   //print_list(a);
   signal(SIGINT,sighandler);
-  a = insert_in_order(a, "Hey Jude", "Beatles", "heyjude.mp3");
-  a = insert_in_order(a, "Bodak Yellow", "Cardi B", "bodakyellow.mp3");
+  //a = insert_in_order(a, "Hey Jude", "Beatles", "heyjude.mp3");
   // a = insert_in_order(a, "I'm a Believer", "Monkees", "believer.mp3");
   // a = insert_in_order(a, "kobebryant", "Kobe Bryant", "kobebryant.mp3");
-  a = insert_in_order(a, "Duck Song", "Banpreet", "ducksong.mp3");
+  //a = insert_in_order(a, "Duck Song", "Banpreet", "ducksong.mp3");
   update_playlist(a, sd);
   /* add_to_playlist("Hey Jude", "Beatles", "heyjude.mp3", sd);
-  add_to_playlist("Bodak Yellow", "Cardi B", "bodakyellow.mp3", sd);
   add_to_playlist("Im a Believer", "Monkees", "believer.mp3", sd);
   add_to_playlist("kobebryant", "Kobe Bryant", "kobebryant.mp3", sd);
   add_to_playlist("Duck Song", "Banpreet", "ducksong.mp3", sd); */
