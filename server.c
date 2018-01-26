@@ -22,13 +22,13 @@
 //Creates New Playlist File and Semaphore
 //Returns Semaphore descriptor
 
-/*union semun {
+union semun {
                int              val;
                struct semid_ds *buf;
                unsigned short  *array;
                struct seminfo  *__buf;
 
-           }; */
+           }; 
 
 
 static void sighandler(int signo) {
