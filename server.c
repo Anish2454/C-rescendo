@@ -19,14 +19,14 @@
 
 //Creates New Playlist File and Semaphore
 //Returns Semaphore descriptor
-/*union semun {
+union semun {
                int              val;  
                struct semid_ds *buf;  
                unsigned short  *array;  
                struct seminfo  *__buf;  
                                       
            };
-*/
+
 
 static void sighandler(int signo) {
   if (signo == SIGINT) {
@@ -175,11 +175,13 @@ char** end_vote(struct song_node * playlist, int sd){
   print_list(playlist);
   playlist = sort_by_votes(playlist);
   print_list(playlist);
-  char** commands = (char**) calloc(2, sizeof(char*));
+  char** commands = (char**) calloc(4, sizeof(char*));
   commands[0] = "mpg123";
   char* command = calloc(100, sizeof(char));
   command = playlist -> file_name;
-  commands[1] = command;
+  commands[1] =  "-C";
+  commands[2] = command;
+  commands[3] = NULL;
   if (playlist -> next)
     playlist = playlist -> next; //Removes top song
   //Up the semaphore
@@ -275,12 +277,13 @@ int main(){
       count++;
       int d = fork();
       if (!d) {
-        execvp("/usr/local/bin/mpg123", commands);
+        execvp("/usr/bin/mpg123", commands);
         exit(0);
       }
       else {
         int status; 
         waitpid(d, &status, 0);
+	printf("Child Finished PLaying Song\n");
       }
       //exit(0);
     }

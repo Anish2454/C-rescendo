@@ -17,14 +17,14 @@
 #define KEY 5678
 #define playlist_name "client_playlist"
 
-/*union semun {
+union semun {
                int              val;  
                struct semid_ds *buf;  
                unsigned short  *array;  
                struct seminfo  *__buf;  
                                       
            };
-*/
+
 int create_playlist(){
   printf("Creating Playlist File...\n");
   int fd = open(playlist_name, O_EXCL|O_CREAT, 0777);
@@ -177,7 +177,7 @@ int main() {
                     exit(0);
                 }
                 else {
-                    execvp("/usr/local/bin/mpg123", commandz);
+                    execvp("/usr/bin/mpg123", commandz);
                     exit(0);
                 }
             }
