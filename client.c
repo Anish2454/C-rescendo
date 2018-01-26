@@ -20,13 +20,13 @@
 #define KEY 5678
 #define playlist_name "client_playlist"
 
-/* union semun {
+union semun {
                int              val;
                struct semid_ds *buf;
                unsigned short  *array;
                struct seminfo  *__buf;
 
-           };  */
+           };  
 
 int create_playlist(){
   printf("Creating Playlist File...\n");
@@ -177,7 +177,7 @@ int main() {
                         arr[2] = commandz[i];
                         arr[3] = NULL;
                         printf("Press Q to go to the next song\n");
-                        execvp("/usr/local/bin/mpg123", arr);
+                        execvp("/usr/bin/mpg123", arr);
                         exit(0);
                     }
                  }
