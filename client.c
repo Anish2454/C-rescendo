@@ -17,26 +17,22 @@
 #define KEY 5678
 #define playlist_name "client_playlist"
 
-
-union semun {
+/* union semun {
                int              val;
                struct semid_ds *buf;
                unsigned short  *array;
                struct seminfo  *__buf;
-
-           }; 
+ 
+           };  */
 
 int create_playlist(){
   printf("Creating Playlist File...\n");
   int fd = open(playlist_name, O_EXCL|O_CREAT, 0777);
-  if (fd == -1) printf("Error: %s\n", strerror(errno));
-  printf("Creating Playlist Semaphore...\n");
+  printf("Creating Playlist Semaphore...\n\n");
   int sd = semget(KEY, 1, 0777|IPC_CREAT|IPC_EXCL);
-  if (sd == -1) printf("Error: %s\n", strerror(errno));
   union semun semopts;
   semopts.val = 1;
   semctl(sd,0,SETVAL,semopts);
-  printf("Created Semaphore: %d\n", sd);
   close(fd);
   return sd;
 }
@@ -49,17 +45,13 @@ int update_playlist(struct song_node * song, int sd){
 	sb.sem_flg = SEM_UNDO;
 	semop(sd, &sb, 1);
   int fd = open(playlist_name, O_WRONLY | O_TRUNC, 0777);
-  if (fd == -1) printf("Error: %s\n", strerror(errno));
-  //lseek(fd, 0, SEEK_END);
   while (song) {
     int result = write(fd, song -> name, strlen(song -> name));
     write(fd, "|", 1);
     result = write(fd, song -> artist, strlen(song -> artist));
     write(fd, "|", 1);
     result = write(fd, song -> file_name, strlen(song -> file_name));
-    if (result == -1) printf("Error: %s\n", strerror(errno));
     result = write(fd, "\n", sizeof(char));
-    if (result == -1) printf("Error: %s\n", strerror(errno));
     song = song -> next;
   }
   close(fd);
@@ -71,7 +63,6 @@ int update_playlist(struct song_node * song, int sd){
 }
 
 int get_playlist_size(){
-  printf("Getting size of playlist\n");
   struct stat sb;
   stat(playlist_name, &sb);
   return sb.st_size;
@@ -86,9 +77,7 @@ char* view_playlist(int sd){
 	semop(sd, &sb, 1);
 
   int size = get_playlist_size();
- // printf("Viewing Playlist\n");
   int fd = open(playlist_name, O_RDONLY, 0777);
-  if (fd == -1) printf("Error: %s\n", strerror(errno));
   char* buffer = (char*) calloc(1, size);
   int result = read(fd, buffer, size);
   if (result == -1) printf("Error: %s\n", strerror(errno));
@@ -104,9 +93,6 @@ struct song_node * initialize_playlist(int sd) {
     int size = get_playlist_size();
     char * buff = malloc(size);
     strcpy(buff, view_playlist(sd));
-    printf("\n*** CURRENT PLAYLIST ***\n");
-    // char ** separated_newline = separate_line(buff, "\n");
-    // start added code
     int i = 0;
     char * temp = malloc(strlen(buff));
     strcpy(temp, buff);
@@ -123,7 +109,6 @@ struct song_node * initialize_playlist(int sd) {
     }
     free(buff);
     separated_newline[i-1] = 0;
-    // end added code
     struct song_node * node = NULL;
     i = 0;
     while (separated_newline[i]) {
@@ -159,6 +144,7 @@ int main() {
     char ** commandz;
     char ** inputs;
     int sd = create_playlist();
+    printf("Initial Playlist: ");
     a = initialize_playlist(sd);
     print_list(a);
     commandz = get_playlist_commands(a);
@@ -168,6 +154,7 @@ int main() {
         fgets(s, 50, stdin);
         int len = strlen(s) - 1;
         s[len] = 0;
+        trim(s);
         if (strcmp(s, "stop") == 0)
             exit(0);
         else if (strcmp(s, "play") == 0) {
@@ -186,7 +173,8 @@ int main() {
                         arr[1] = "-C";
                         arr[2] = commandz[i];
                         arr[3] = NULL;
-                        execvp("/usr/bin/mpg123", arr);
+                        printf("Press Q to go to the next song\n");
+                        execvp("/usr/local/bin/mpg123", arr);
                         exit(0);
                     }
                  }
@@ -198,6 +186,7 @@ int main() {
             }
         }
         else if (strcmp(s, "add") == 0) {
+
             printf("Song name: ");
             char * name = malloc(50);
             fgets(name, 50, stdin);
@@ -210,7 +199,13 @@ int main() {
             name[strlen(name)-1] = 0;
             artist[strlen(artist)-1] = 0;
             file[strlen(file)-1] = 0;
-            a = insert_in_order(a, name, artist, file);
+            struct song_node * node = find_song(a, name, artist);
+            if (!a) {
+                a = insert_in_order(a, name, artist, file);
+            }
+            else {
+                printf("Song already in playlist!\n");
+            }
             print_list(a);
             temp = a;
             update_playlist(temp, sd);
@@ -243,11 +238,7 @@ int main() {
 
           int server_socket;
           char buffer[BUFFER_SIZE];
-
-          //if (buffer1)
-            server_socket = client_setup( buffer1 );
-          //else
-            //server_socket = client_setup( TEST_IP );
+          server_socket = client_setup( buffer1 );
 
           printf("\nWelcome to the shared playlist!\n\n");
           printf("To vote for a song: vote -<song name> -<song artist>\n");
