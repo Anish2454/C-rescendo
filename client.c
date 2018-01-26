@@ -11,19 +11,20 @@
 #include <unistd.h>
 #include "lib.h"
 #include "listfxns.h"
-#include "pipe_networking.h"
+#include "networking.h"
 #include "parsing.h"
 
 #define KEY 5678
 #define playlist_name "client_playlist"
 
+/*
 union semun {
-               int              val;  
-               struct semid_ds *buf;  
-               unsigned short  *array;  
-               struct seminfo  *__buf;  
-                                      
-           };
+               int              val;
+               struct semid_ds *buf;
+               unsigned short  *array;
+               struct seminfo  *__buf;
+
+           }; */
 
 int create_playlist(){
   printf("Creating Playlist File...\n");
@@ -222,11 +223,19 @@ int main() {
             commandz = get_playlist_commands(a);
         }
         else if (!strcmp(s, "server")){
-          int to_server;
-          int from_server;
+          char buffer1[BUFFER_SIZE];
+          printf("Enter the address of the server: ");
+          fgets(buffer1, sizeof(buffer1), stdin);
+          *strchr(buffer1, '\n') = 0;
+
+          int server_socket;
           char buffer[BUFFER_SIZE];
 
-          from_server = client_handshake( &to_server );
+          //if (buffer1)
+            server_socket = client_setup( buffer1 );
+          //else
+            //server_socket = client_setup( TEST_IP );
+
           printf("\nWelcome to the shared playlist!\n\n");
           printf("To vote for a song: vote -<song name> -<song artist>\n");
           printf("If the song is already a part of the shared playlist, you will simply cast a vote for it.\n");
@@ -234,11 +243,11 @@ int main() {
           printf("To view the shared playlist: view\n\n");
 
           while (1) {
-            printf("enter data: ");
+            printf("enter: ");
             fgets(buffer, sizeof(buffer), stdin);
             *strchr(buffer, '\n') = 0;
-            write(to_server, buffer, sizeof(buffer));
-            read(from_server, buffer, sizeof(buffer));
+            write(server_socket, buffer, sizeof(buffer));
+            read(server_socket, buffer, sizeof(buffer));
             printf("received: [%s]\n", buffer);
           }
         }

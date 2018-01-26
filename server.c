@@ -11,7 +11,7 @@
 #include <sys/wait.h>
 #include "lib.h"
 #include "listfxns.h"
-#include "pipe_networking.h"
+#include "networking.h"
 #include "server.h"
 #include "parsing.h"
 #include <signal.h>
@@ -19,13 +19,14 @@
 
 //Creates New Playlist File and Semaphore
 //Returns Semaphore descriptor
+/*
 union semun {
-               int              val;  
-               struct semid_ds *buf;  
-               unsigned short  *array;  
-               struct seminfo  *__buf;  
-                                      
-           };
+               int              val;
+               struct semid_ds *buf;
+               unsigned short  *array;
+               struct seminfo  *__buf;
+
+           };*/
 
 
 static void sighandler(int signo) {
@@ -205,7 +206,7 @@ void subserver(struct song_node * playlist, int from_client, int sd) {
         char resp[100];
         sprintf(resp, "Voted For: %s", name);
         write(to_client, resp, sizeof(resp));
-        struct song_node * temp = playlist; 
+        struct song_node * temp = playlist;
         printf("SUBSERVER PLAYLIST\n");
         print_list(playlist);
         update_playlist(temp, sd);
@@ -224,6 +225,8 @@ void subserver(struct song_node * playlist, int from_client, int sd) {
       dup2(stdout, before);
     }
   }
+  close(from_client);
+  exit(0);
 }
 
 int main(){
@@ -235,7 +238,7 @@ int main(){
   a = insert_in_order(a, "Bodak Yellow", "Cardi B", "bodakyellow.mp3");
  // a = insert_in_order(a, "I'm a Believer", "Monkees", "believer.mp3");
  // a = insert_in_order(a, "kobebryant", "Kobe Bryant", "kobebryant.mp3");
-  a = insert_in_order(a, "Duck Song", "Banpreet", "ducksong.mp3");   
+  a = insert_in_order(a, "Duck Song", "Banpreet", "ducksong.mp3");
  /* add_to_playlist("Hey Jude", "Beatles", "heyjude.mp3", sd);
   add_to_playlist("Bodak Yellow", "Cardi B", "bodakyellow.mp3", sd);
   add_to_playlist("Im a Believer", "Monkees", "believer.mp3", sd);
@@ -277,11 +280,11 @@ int main(){
       count++;
       int d = fork();
       if (!d) {
-        execvp("/usr/bin/mpg123", commands);
+        execvp("/usr/local/bin/mpg123", commands);
         exit(0);
       }
       else {
-        int status; 
+        int status;
         waitpid(d, &status, 0);
 	printf("Child Finished PLaying Song\n");
       }
@@ -291,22 +294,20 @@ int main(){
     //RECIEVE SIGNAL TO
   }
   else{
-    while(1){
-      //Blocks Until Client Connects
-      int from_client = server_setup();
-      
-      //We now have a client, time to fork
-      int f2 = fork();
-      if(!f2){
+    int listen_socket;
+    int f2;
+    listen_socket = server_setup();
+
+    while (1) {
+      int client_socket = server_connect(listen_socket);
+      f2 = fork();
+      if (f2 == 0){
         printf("subserver created\n");
-        subserver(a, from_client, sd);
-       // a = initialize_playlist(sd);
-        exit(0);
+        subserver(a, client_socket, sd);
       }
-     // else{
-        close(from_client);
-        exit(0);
-     // }
+      else{
+        close(client_socket);
+      }
     }
   }
   /*
