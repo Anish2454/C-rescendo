@@ -220,7 +220,7 @@ void subserver(struct song_node * playlist, int from_client, int sd) {
       //Redirect view_playlist output from stdout to pipe
       int stdout = dup(STDOUT_FILENO);
     	int before = dup2(to_client, STDOUT_FILENO);
-      view_playlist(sd);
+      print_list(playlist);
       dup2(stdout, before);
     }
   }
